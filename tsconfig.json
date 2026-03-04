@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "moduleResolution": "nodenext", // Essential for 'nodenext' module
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "types": [
+      "node"
+    ], // Replaces the empty [] so we can use process.stdout etc.
+    "lib": [
+      "esnext"
+    ],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    /* Modern Node Settings */
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

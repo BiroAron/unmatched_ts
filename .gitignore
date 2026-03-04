@@ -1,0 +1,22 @@
+# Dependency directories (The heavy stuff)
+node_modules/
+
+# Build output (The compiled JS from your TS)
+dist/
+out/
+
+# Environment variables (In case you add secrets later)
+.env
+.env.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Optional: VS Code settings (if you don't want to share them)
+.vscode/
