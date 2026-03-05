@@ -3,13 +3,28 @@ import type { EventMap } from "../types/Event.ts";
 type Callback<K extends keyof EventMap> = (context: EventMap[K]) => EventMap[K];
 
 export class EventBus {
-  private listeners: { [K in keyof EventMap]?: Callback<K>[] } = {};
+  private listeners: Record<string, any[]> = {};
 
   public subscribe<K extends keyof EventMap>(event: K, callback: Callback<K>) {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
     }
-    this.listeners[event]?.push(callback);
+    this.listeners[event].push(callback);
+  }
+
+  public unsubscribe<K extends keyof EventMap>(
+    event: K,
+    callback: Callback<K>,
+  ) {
+    if (!this.listeners[event]) return;
+
+    this.listeners[event] = this.listeners[event].filter(
+      (cb) => cb !== callback,
+    );
+  }
+
+  public clearAll() {
+    this.listeners = {};
   }
 
   public emit<K extends keyof EventMap>(event: K, context: EventMap[K]) {

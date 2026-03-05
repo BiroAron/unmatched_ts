@@ -4,50 +4,103 @@ import type { Card } from "./types/Card.ts";
 
 const engine = new GameEngine();
 
-const voyageCard: Card = {
-  id: "v1",
-  title: "Voyage 1",
+const createDeck = (charName: string) => [
+  {
+    id: `${charName}1`,
+    title: "Card",
+    type: "VERSATILE",
+    value: 3,
+    boost: 1,
+    characterName: charName,
+    tags: [],
+    effectIds: [],
+  } as Card,
+  {
+    id: `${charName}2`,
+    title: "Card",
+    type: "VERSATILE",
+    value: 3,
+    boost: 1,
+    characterName: charName,
+    tags: [],
+    effectIds: [],
+  } as Card,
+];
+
+const strike: Card = {
+  id: "s1",
+  title: "Strike",
   type: "ATTACK",
   value: 3,
-  boost: 2,
+  boost: 1,
+  characterName: "Chupacabra",
+  tags: [],
+  effectIds: [],
+};
+const block: Card = {
+  id: "b1",
+  title: "Block",
+  type: "DEFENSE",
+  value: 2,
+  boost: 1,
   characterName: "Sinbad",
-  tags: ["voyage"],
+  tags: [],
+  effectIds: [],
 };
 
-const sinbad = new PlayerState("Sinbad", 15, 2, 7, [], (self, ctx) => {
-  if (ctx.player !== self) return ctx;
-  const voyages = ctx.player.getDiscardCountByTag("voyage");
-  ctx.bonusMove += voyages;
-  console.log(`[Passive] Sinbad's voyages found: ${voyages}. Adding bonus.`);
-  return ctx;
-});
+const chupacabra = new PlayerState(
+  "Chupacabra",
+  14,
+  2,
+  7,
+  createDeck("Chupacabra"),
+  (self, ctx) => {
+    if (ctx.type === "combat" && ctx.attacker === self) {
+      console.log(`>>> [PASSIVE] ${self.characterName} draws for attacking!`);
+      self.draw();
+    }
+    return ctx;
+  },
+);
 
-const sinbad2 = new PlayerState("Sinbad2", 15, 2, 7, [], (self, ctx) => {
-  if (ctx.player !== self) return ctx;
-  const voyages = ctx.player.getDiscardCountByTag("voyage");
-  ctx.bonusMove += voyages;
-  console.log(`[Passive] Sinbad2's voyages found: ${voyages}. Adding bonus.`);
-  return ctx;
-});
+const sinbad = new PlayerState(
+  "Sinbad",
+  15,
+  2,
+  7,
+  createDeck("Sinbad"),
+  (self, ctx) => {
+    if (ctx.type === "move" && ctx.player === self) {
+      const voyages = self.getDiscardCountByTag("voyage");
+      ctx.bonusMove += voyages;
+      console.log(
+        `>>> [PASSIVE] ${self.characterName} zooms +${voyages} spaces!`,
+      );
+    }
+    return ctx;
+  },
+);
+
+engine.addPlayer(chupacabra);
+engine.addPlayer(sinbad);
 
 sinbad.discard.push(
-  { ...voyageCard, id: "v1a" },
-  { ...voyageCard, id: "v1b" },
-  { ...voyageCard, id: "v1c" },
+  { id: "v1", tags: ["voyage"] } as any,
+  { id: "v2", tags: ["voyage"] } as any,
+  { id: "v3", tags: ["voyage"] } as any,
 );
 
-sinbad2.discard.push(
-  { ...voyageCard, id: "v2a" },
-  { ...voyageCard, id: "v2b" },
+engine.bus.subscribe("beforeMovement", (ctx) => sinbad.passive(sinbad, ctx));
+engine.bus.subscribe("afterCombat", (ctx) =>
+  chupacabra.passive(chupacabra, ctx),
 );
 
-engine.bus.subscribe("beforeMovement", sinbad.passive);
-engine.bus.subscribe("beforeMovement", sinbad2.passive);
-
-engine.addPlayer(sinbad);
-engine.addPlayer(sinbad2);
-
-console.log("--- Starting Test ---");
+console.log("--- SINBAD MANEUVERS ---");
 engine.maneuver("Sinbad");
-engine.maneuver("Sinbad2");
-console.log("--- Test Complete ---");
+
+console.log("\n--- CHUPACABRA ATTACKS ---");
+engine.resolveCombat(chupacabra, sinbad, strike, block);
+
+console.log("\n--- STATUS CHECK ---");
+console.log(`Sinbad HP: ${sinbad.hp}`);
+console.log(`Chupacabra Hand Size: ${chupacabra.hand.length}`);

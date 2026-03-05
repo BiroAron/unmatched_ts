@@ -1,12 +1,10 @@
 import type { Card } from "../types/Card.ts";
-import type { MoveContext } from "../types/Event.ts";
 
 export class PlayerState {
   public hp: number;
   public hand: Card[] = [];
   public discard: Card[] = [];
   public deck: Card[];
-  public passive: (ctx: MoveContext) => MoveContext;
 
   constructor(
     public readonly characterName: string,
@@ -14,11 +12,10 @@ export class PlayerState {
     public readonly baseMove: number,
     public readonly maxHandSize: number,
     startingDeck: Card[],
-    passiveFn: (self: PlayerState, ctx: MoveContext) => MoveContext,
+    public passive: (self: PlayerState, ctx: any) => any,
   ) {
     this.hp = maxHp;
     this.deck = [...startingDeck];
-    this.passive = (ctx) => passiveFn(this, ctx);
     this.shuffle();
   }
 
