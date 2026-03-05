@@ -1,30 +1,25 @@
 {
   "compilerOptions": {
+    /* 1. The "Extension Fix" Settings */
     "target": "esnext",
-    "module": "nodenext",
-    "moduleResolution": "nodenext", // Essential for 'nodenext' module
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true, // Required when using .ts extensions in imports
+
+    /* 2. File Layout */
     "rootDir": "./src",
-    "outDir": "./dist",
-    "types": [
-      "node"
-    ], // Replaces the empty [] so we can use process.stdout etc.
-    "lib": [
-      "esnext"
-    ],
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    /* Strictness */
+    "types": ["node"],
+    "lib": ["esnext"],
+
+    /* 3. Your Strict Rules (Keep these!) */
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    /* Modern Node Settings */
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }
