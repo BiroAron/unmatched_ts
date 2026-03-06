@@ -13,7 +13,7 @@ const createDeck = (charName: string) => [
     boost: 1,
     characterName: charName,
     tags: [],
-    effectIds: [],
+    effects: [],
   } as Card,
   {
     id: `${charName}2`,
@@ -23,7 +23,7 @@ const createDeck = (charName: string) => [
     boost: 1,
     characterName: charName,
     tags: [],
-    effectIds: [],
+    effects: [],
   } as Card,
 ];
 
@@ -35,7 +35,7 @@ const strike: Card = {
   boost: 1,
   characterName: "Chupacabra",
   tags: [],
-  effectIds: [],
+  effects: [],
 };
 const block: Card = {
   id: "b1",
@@ -45,7 +45,7 @@ const block: Card = {
   boost: 1,
   characterName: "Sinbad",
   tags: [],
-  effectIds: [],
+  effects: [],
 };
 
 const chupacabra = new PlayerState(

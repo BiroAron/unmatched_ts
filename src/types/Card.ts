@@ -1,5 +1,26 @@
 export type CardType = "ATTACK" | "DEFENSE" | "VERSATILE" | "SCHEME";
 
+export interface CardEffect {
+  phase:
+    | "immediately"
+    | "beforeCombat"
+    | "duringCombat"
+    | "afterCombat"
+    | "scheme";
+  type:
+    | "draw"
+    | "move"
+    | "damage"
+    | "cancel"
+    | "discard"
+    | "recoverHp"
+    | "custom";
+  value?: number;
+  target?: "self" | "opponent" | "attacker" | "defender";
+  condition?: "won" | "lost" | "damaged" | "startedDifferentZone";
+  instruction?: string; // For "custom" logic that is too unique to automate
+}
+
 export interface Card {
   id: string;
   title: string;
@@ -8,7 +29,7 @@ export interface Card {
   boost: number;
   characterName: string;
   tags: string[];
-  effectIds: string[];
+  effects: CardEffect[];
 }
 
 export const BLANK_DEFENSE_CARD: Card = {
@@ -19,5 +40,5 @@ export const BLANK_DEFENSE_CARD: Card = {
   boost: 0,
   characterName: "",
   tags: [],
-  effectIds: [],
+  effects: [],
 };
