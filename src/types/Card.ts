@@ -1,12 +1,13 @@
 export type CardType = "ATTACK" | "DEFENSE" | "VERSATILE" | "SCHEME";
+export type EffectPhase =
+  | "immediately"
+  | "beforeCombat"
+  | "duringCombat"
+  | "afterCombat"
+  | "scheme";
 
 export interface CardEffect {
-  phase:
-    | "immediately"
-    | "beforeCombat"
-    | "duringCombat"
-    | "afterCombat"
-    | "scheme";
+  phase: EffectPhase;
   type:
     | "draw"
     | "move"
@@ -14,11 +15,13 @@ export interface CardEffect {
     | "cancel"
     | "discard"
     | "recoverHp"
-    | "custom";
+    | "custom"
+    | "lookAtOpponentHand"
+    | "valueSet";
   value?: number;
-  target?: "self" | "opponent" | "attacker" | "defender";
+  target?: "self" | "opponent" | "attacker" | "defender" | "choose";
   condition?: "won" | "lost" | "damaged" | "startedDifferentZone";
-  instruction?: string; // For "custom" logic that is too unique to automate
+  instruction?: string;
 }
 
 export interface Card {

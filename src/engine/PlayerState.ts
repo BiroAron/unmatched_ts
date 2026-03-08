@@ -1,25 +1,25 @@
-import type { Card } from "../types/Card.ts";
+import type { CharacterData } from "../config/characters/Sinbad.ts";
+import { type Card } from "../types/Card.ts";
 
 export class PlayerState {
+  public characterName: string;
   public hp: number;
+  public maxHp: number;
+  public baseMove: number = 2;
+  public deck: Card[] = [];
   public hand: Card[] = [];
   public discard: Card[] = [];
-  public deck: Card[];
 
-  constructor(
-    public readonly characterName: string,
-    public readonly maxHp: number,
-    public readonly baseMove: number,
-    public readonly maxHandSize: number,
-    startingDeck: Card[],
-    public passive: (self: PlayerState, ctx: any) => any,
-  ) {
-    this.hp = maxHp;
-    this.deck = [...startingDeck];
+  constructor(data: CharacterData) {
+    this.characterName = data.name;
+    this.maxHp = data.maxHp;
+    this.hp = data.maxHp;
+    this.deck = [...data.deck];
+
     this.shuffle();
   }
 
-  public shuffle() {
+  private shuffle() {
     for (let i = this.deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       const temp = this.deck[i];

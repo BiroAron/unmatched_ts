@@ -1,6 +1,7 @@
 import type { Card } from "../../types/Card.ts";
 import type { EventBus } from "../../engine/EventBus.ts";
 import type { PlayerState } from "../../engine/PlayerState.ts";
+import type { CombatContext } from "../../types/Event.ts";
 
 export interface CharacterData {
   name: string;
@@ -13,12 +14,24 @@ function createCards(
   template: Omit<Card, "id">,
   quantity: number,
   prefix: string,
-): Card[] {
+) {
   return Array.from({ length: quantity }).map((_, i) => ({
     ...template,
     id: `${prefix}-${i + 1}`,
   }));
 }
+
+export const SINBAD_CUSTOM_EFFECTS: Record<
+  string,
+  (actor: PlayerState, context: CombatContext) => void
+> = {
+  RETURN_ALL_VOYAGES_TO_HAND: (actor) => {
+    const voyages = actor.discard.filter((c) => c.tags.includes("voyage"));
+    actor.hand.push(...voyages);
+    actor.discard = actor.discard.filter((c) => !c.tags.includes("voyage"));
+    console.log("Voyages returned!");
+  },
+};
 
 export const SINBAD_DATA: CharacterData = {
   name: "Sinbad",
@@ -45,6 +58,23 @@ export const SINBAD_DATA: CharacterData = {
       }
       return ctx;
     });
+
+    bus.subscribe("customEffect", (ctx) => {
+      const { instruction, actor } = ctx;
+
+      console.log(
+        `Custom effect triggered: ${instruction} by ${actor.characterName}`,
+      );
+
+      if (instruction === "RETURN_ALL_VOYAGES_TO_HAND" && actor === player) {
+        const voyages = actor.discard.filter((c) => c.tags.includes("voyage"));
+        actor.hand.push(...voyages);
+        actor.discard = actor.discard.filter((c) => !c.tags.includes("voyage"));
+        console.log("Sinbad's voyages returned to hand!");
+      }
+
+      return ctx;
+    });
   },
   deck: [
     ...createCards(
@@ -55,7 +85,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 2,
         characterName: "Any",
         tags: [],
-        effects: ["DRAW_ONE_CARD"],
+        effects: [{ phase: "afterCombat", type: "draw", value: 1 }],
       },
       1,
       "any-imp",
@@ -68,7 +98,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 1,
         characterName: "Porter",
         tags: [],
-        effects: ["DRAW_TWO_CARDS"],
+        effects: [{ phase: "afterCombat", type: "draw", value: 2 }],
       },
       3,
       "por-fate",
@@ -81,7 +111,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 0,
         characterName: "Sinbad",
         tags: ["voyage"],
-        effects: ["MOVE_TWO_SPACES"],
+        effects: [{ phase: "afterCombat", type: "move", value: 2 }],
       },
       1,
       "sin-v1",
@@ -94,7 +124,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 0,
         characterName: "Sinbad",
         tags: ["voyage"],
-        effects: ["OPPONENT_DISCARD_ONE"],
+        effects: [{ phase: "afterCombat", type: "discard", value: 1 }],
       },
       1,
       "sin-v2",
@@ -107,7 +137,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 0,
         characterName: "Sinbad",
         tags: ["voyage"],
-        effects: ["DRAW_ONE_CARD"],
+        effects: [{ phase: "afterCombat", type: "draw", value: 1 }],
       },
       1,
       "sin-v3",
@@ -120,7 +150,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 0,
         characterName: "Sinbad",
         tags: ["voyage"],
-        effects: ["LOOK_AT_OPPONENT_HAND"],
+        effects: [{ phase: "afterCombat", type: "lookAtOpponentHand" }],
       },
       1,
       "sin-v4",
@@ -133,7 +163,13 @@ export const SINBAD_DATA: CharacterData = {
         boost: 0,
         characterName: "Sinbad",
         tags: ["voyage"],
-        effects: ["RETURN_ALL_VOYAGES_TO_HAND"],
+        effects: [
+          {
+            phase: "afterCombat",
+            type: "custom",
+            instruction: "RETURN_ALL_VOYAGES_TO_HAND",
+          },
+        ],
       },
       1,
       "sin-v5",
@@ -146,7 +182,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 0,
         characterName: "Sinbad",
         tags: ["voyage"],
-        effects: ["DEAL_TWO_DAMAGE"],
+        effects: [{ phase: "afterCombat", type: "damage", value: 2 }],
       },
       1,
       "sin-v6",
@@ -159,7 +195,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 0,
         characterName: "Sinbad",
         tags: ["voyage"],
-        effects: ["RECOVER_TWO_HP"],
+        effects: [{ phase: "afterCombat", type: "recoverHp", value: 2 }],
       },
       1,
       "sin-v7",
@@ -172,7 +208,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 1,
         characterName: "Any",
         tags: [],
-        effects: ["DRAW_ONE_CARD"],
+        effects: [{ phase: "afterCombat", type: "draw", value: 1 }],
       },
       2,
       "any-exp",
@@ -185,7 +221,9 @@ export const SINBAD_DATA: CharacterData = {
         boost: 1,
         characterName: "Any",
         tags: [],
-        effects: ["IF_COMBAT_WON_MOVE_ONE_PARTICIPANT_FOUR_SPACES"],
+        effects: [
+          { phase: "afterCombat", type: "move", target: "choose", value: 4 },
+        ],
       },
       2,
       "any-leap",
@@ -198,7 +236,14 @@ export const SINBAD_DATA: CharacterData = {
         boost: 1,
         characterName: "Any",
         tags: [],
-        effects: ["IF_STARTED_IN_DIFFERENT_ZONE_BASE_ATTACK_OF_CARD_SET_TO_5"],
+        effects: [
+          {
+            phase: "duringCombat",
+            type: "valueSet",
+            condition: "startedDifferentZone",
+            value: 5,
+          },
+        ],
       },
       3,
       "any-mom",
@@ -211,7 +256,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 1,
         characterName: "Sinbad",
         tags: [],
-        effects: ["MOVE_SINBAD_UP_TO_THREE_SPACES"],
+        effects: [{ phase: "afterCombat", type: "move", value: 3 }],
       },
       4,
       "sin-toil",
@@ -224,7 +269,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 1,
         characterName: "Any",
         tags: [],
-        effects: ["CANCEL_EFFECTS"],
+        effects: [{ phase: "immediately", type: "cancel" }],
       },
       3,
       "any-fnt",
@@ -237,7 +282,10 @@ export const SINBAD_DATA: CharacterData = {
         boost: 1,
         characterName: "Any",
         tags: [],
-        effects: ["DRAW_ONE_IF_COMBAT_WON_IF_WON_DRAW_TWO_INSTEAD"],
+        effects: [
+          { phase: "afterCombat", type: "draw", value: 1, condition: "won" },
+          { phase: "afterCombat", type: "draw", value: 2, condition: "lost" },
+        ],
       },
       3,
       "any-reg",
@@ -250,7 +298,7 @@ export const SINBAD_DATA: CharacterData = {
         boost: 1,
         characterName: "Sinbad",
         tags: [],
-        effects: ["DRAW_THREE_CARDS"],
+        effects: [{ phase: "scheme", type: "draw", value: 3 }],
       },
       2,
       "sin-rich",

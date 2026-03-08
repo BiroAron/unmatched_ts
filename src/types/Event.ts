@@ -30,4 +30,9 @@ export interface EventMap {
   immediately: CombatContext;
   duringCombat: CombatContext;
   afterCombat: CombatContext;
+  customEffect: {
+    instruction: string;
+    actor: PlayerState;
+    context: CombatContext | MoveContext;
+  };
 }
