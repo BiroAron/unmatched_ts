@@ -56,3 +56,9 @@ engine.resolveCombat(p1, p2, voyageHome, regroup);
 console.log(
   `${p1.characterName} Discard count: ${p1.discard.length} (Expected: 0 or 1 depending on if current card is discarded yet)`,
 );
+
+// TEST 5: Riches Beyond Compare
+const richesCard = p1.deck.find((c) => c.title === "Riches Beyond Compare")!;
+const handBefore = p1.hand.length;
+
+engine.resolveScheme(p1, richesCard);
