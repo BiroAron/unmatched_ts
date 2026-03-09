@@ -240,7 +240,7 @@ export const TEST_SINBAD_DATA: CharacterData = {
           {
             phase: "duringCombat",
             type: "valueSet",
-            condition: "startedDifferentZone",
+            condition: "startedDifferentSpace",
             value: 5,
           },
         ],

@@ -1,3 +1,4 @@
+import { EFFECT_LOGIC } from "../config/card-effects/general.ts";
 import { type Card, type CardEffect, type EffectPhase } from "../types/Card.ts";
 import type { CombatContext, MoveContext } from "../types/Event.ts";
 import { EventBus } from "./EventBus.ts";
@@ -54,68 +55,51 @@ export class GameEngine {
     actor: PlayerState,
     context: CombatContext,
   ) {
-    if (effect.condition === "startedDifferentZone") {
-      //if (actor.currentZoneId === actor.turnStartZoneId) {
-      return; // Condition not met, skip this effect
-      //}
+    if (effect.condition === "startedDifferentSpace") {
+      if (!actor.hasMovedToDifferentSpace()) {
+        console.log(
+          `[Condition] ${effect.type} failed: Actor is still on their starting space.`,
+        );
+        return;
+      }
+      console.log(
+        `[Condition] ${effect.type} met: Actor moved from ${actor.turnStartSpaceId} to ${actor.currentSpaceId}`,
+      );
     }
 
-    const target =
-      effect.target === "opponent"
-        ? actor === context.attacker
-          ? context.defender
-          : context.attacker
-        : actor;
-
-    switch (effect.type) {
-      case "draw":
-        for (let i = 0; i < (effect.value || 0); i++) target.draw();
-        break;
-
-      case "damage":
-        target.takeDamage(effect.value || 0);
-        break;
-
-      case "recoverHp":
-        target.hp = Math.min(target.maxHp, target.hp + (effect.value || 0));
-        break;
-
-      case "lookAtOpponentHand":
-        console.log(`Attempting to look at ${target.characterName}'s hand...`);
-        break;
-
-      case "valueSet":
-        if (actor === context.attacker) {
-          context.finalAttackValue = effect.value ?? context.finalAttackValue;
-        } else {
-          context.finalDefenseValue = effect.value ?? context.finalDefenseValue;
-        }
-        console.log(`${actor.characterName} value set to ${effect.value}`);
-        break;
-
-      case "cancel":
-        const opponentCard =
-          actor === context.attacker ? context.defenseCard : context.attackCard;
-        if (opponentCard) {
-          opponentCard.effects = opponentCard.effects.filter(
-            (e) => e.phase === "immediately",
-          );
-          console.log(`CANCELLED: Effects on ${opponentCard.title} are gone!`);
-        }
-        break;
-
-      case "custom":
-        if (!effect.instruction) {
-          console.warn("Custom effect missing instruction, skipping.");
-          return;
-        }
-        this.bus.emit("customEffect", {
-          instruction: effect.instruction,
-          actor,
-          context,
-        });
-        break;
+    let target = actor;
+    if (effect.target === "opponent") {
+      if (context && context.type === "combat") {
+        target =
+          actor === context.attacker ? context.defender : context.attacker;
+      } else {
+        console.warn("Attempted to target 'opponent' outside of combat.");
+        return;
+      }
     }
+
+    const handler = EFFECT_LOGIC[effect.type];
+
+    if (handler) {
+      handler(effect, actor, context, target, this.bus);
+    } else {
+      console.warn(`No handler implemented for effect type: ${effect.type}`);
+    }
+  }
+
+  public resolveScheme(actor: PlayerState, card: Card) {
+    console.log(
+      `--- Scheme: ${card.title} played by ${actor.characterName} ---`,
+    );
+
+    const schemeEffects = card.effects.filter((e) => e.phase === "scheme");
+
+    for (const effect of schemeEffects) {
+      this.executeEffect(effect, actor, {} as CombatContext);
+    }
+
+    actor.discard.push(card);
+    actor.hand = actor.hand.filter((c) => c.id !== card.id);
   }
 
   public resolveCombat(
