@@ -7,6 +7,7 @@ export interface CharacterData {
   name: string;
   maxHp: number;
   deck: Card[];
+  rangeType: "MELEE" | "RANGED";
   registerHooks: (bus: EventBus, player: PlayerState) => void;
 }
 
@@ -36,6 +37,7 @@ export const SINBAD_CUSTOM_EFFECTS: Record<
 export const SINBAD_DATA: CharacterData = {
   name: "Sinbad",
   maxHp: 15,
+  rangeType: "MELEE",
   registerHooks: (bus, player) => {
     bus.subscribe("beforeMovement", (ctx) => {
       if (ctx.player === player) {
@@ -124,7 +126,14 @@ export const SINBAD_DATA: CharacterData = {
         boost: 0,
         characterName: "Sinbad",
         tags: ["voyage"],
-        effects: [{ phase: "afterCombat", type: "discard", value: 1 }],
+        effects: [
+          {
+            phase: "afterCombat",
+            target: "opponent",
+            type: "discard",
+            value: 1,
+          },
+        ],
       },
       1,
       "sin-v2",
@@ -240,7 +249,7 @@ export const SINBAD_DATA: CharacterData = {
           {
             phase: "duringCombat",
             type: "valueSet",
-            condition: "startedDifferentZone",
+            condition: "startedDifferentSpace",
             value: 5,
           },
         ],

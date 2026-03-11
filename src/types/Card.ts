@@ -20,7 +20,7 @@ export interface CardEffect {
     | "valueSet";
   value?: number;
   target?: "self" | "opponent" | "attacker" | "defender" | "choose";
-  condition?: "won" | "lost" | "damaged" | "startedDifferentZone";
+  condition?: "won" | "lost" | "damaged" | "startedDifferentSpace";
   instruction?: string;
 }
 

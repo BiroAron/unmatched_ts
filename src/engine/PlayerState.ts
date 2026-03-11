@@ -9,13 +9,17 @@ export class PlayerState {
   public deck: Card[] = [];
   public hand: Card[] = [];
   public discard: Card[] = [];
+  public turnStartSpaceId: string = "";
+  public currentSpaceId: string = "";
+  public spacesVisitedThisTurn: string[] = [];
+  public rangeType: "MELEE" | "RANGED";
 
   constructor(data: CharacterData) {
     this.characterName = data.name;
     this.maxHp = data.maxHp;
     this.hp = data.maxHp;
     this.deck = [...data.deck];
-
+    this.rangeType = data.rangeType;
     this.shuffle();
   }
 
@@ -28,6 +32,23 @@ export class PlayerState {
         this.deck[j] = temp;
       }
     }
+  }
+
+  public resetTurnTracking(spaceId: string) {
+    this.turnStartSpaceId = spaceId;
+    this.currentSpaceId = spaceId;
+    this.spacesVisitedThisTurn = [spaceId];
+  }
+
+  public moveToSpace(spaceId: string) {
+    this.currentSpaceId = spaceId;
+    if (!this.spacesVisitedThisTurn.includes(spaceId)) {
+      this.spacesVisitedThisTurn.push(spaceId);
+    }
+  }
+
+  public hasMovedToDifferentSpace() {
+    return this.currentSpaceId !== this.turnStartSpaceId;
   }
 
   public draw() {
