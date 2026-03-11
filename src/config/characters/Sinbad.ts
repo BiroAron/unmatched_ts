@@ -7,6 +7,7 @@ export interface CharacterData {
   name: string;
   maxHp: number;
   deck: Card[];
+  rangeType: "MELEE" | "RANGED";
   registerHooks: (bus: EventBus, player: PlayerState) => void;
 }
 
@@ -36,6 +37,7 @@ export const SINBAD_CUSTOM_EFFECTS: Record<
 export const SINBAD_DATA: CharacterData = {
   name: "Sinbad",
   maxHp: 15,
+  rangeType: "MELEE",
   registerHooks: (bus, player) => {
     bus.subscribe("beforeMovement", (ctx) => {
       if (ctx.player === player) {
