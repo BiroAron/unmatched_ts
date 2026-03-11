@@ -12,13 +12,14 @@ export class PlayerState {
   public turnStartSpaceId: string = "";
   public currentSpaceId: string = "";
   public spacesVisitedThisTurn: string[] = [];
+  public rangeType: "MELEE" | "RANGED";
 
   constructor(data: CharacterData) {
     this.characterName = data.name;
     this.maxHp = data.maxHp;
     this.hp = data.maxHp;
     this.deck = [...data.deck];
-
+    this.rangeType = data.rangeType;
     this.shuffle();
   }
 
