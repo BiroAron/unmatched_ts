@@ -1,26 +1,6 @@
-import type { Card } from "../../types/Card.ts";
-import type { EventBus } from "../../engine/EventBus.ts";
 import type { PlayerState } from "../../engine/PlayerState.ts";
 import type { CombatContext } from "../../types/Event.ts";
-
-export interface CharacterData {
-  name: string;
-  maxHp: number;
-  deck: Card[];
-  rangeType: "MELEE" | "RANGED";
-  registerHooks: (bus: EventBus, player: PlayerState) => void;
-}
-
-function createCards(
-  template: Omit<Card, "id">,
-  quantity: number,
-  prefix: string,
-) {
-  return Array.from({ length: quantity }).map((_, i) => ({
-    ...template,
-    id: `${prefix}-${i + 1}`,
-  }));
-}
+import { type CharacterData, createCards } from "../../types/Character.ts";
 
 export const SINBAD_CUSTOM_EFFECTS: Record<
   string,
@@ -35,6 +15,7 @@ export const SINBAD_CUSTOM_EFFECTS: Record<
 };
 
 export const SINBAD_DATA: CharacterData = {
+  id: "sinbad",
   name: "Sinbad",
   maxHp: 15,
   rangeType: "MELEE",

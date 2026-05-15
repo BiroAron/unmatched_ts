@@ -51,6 +51,11 @@ export const EFFECT_LOGIC: Record<string, EffectFunction> = {
     }
   },
 
+  move: (effect, _actor, _ctx, target) => {
+    target.pendingMovePoints += effect.value ?? 0;
+    console.log(`[Effect] ${target.characterName} gains ${effect.value ?? 0} bonus move point(s).`);
+  },
+
   discard: (effect, _actor, _ctx, target) => {
     const amount = effect.value || 0;
 

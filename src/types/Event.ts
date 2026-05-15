@@ -26,7 +26,8 @@ export interface CombatContext {
 
 export interface EventMap {
   beforeMovement: MoveContext;
-  afterMovement: { player: PlayerState; spacesMoved: number }; // Added: helpful for "after move" triggers
+  afterMovement: { player: PlayerState; spacesMoved: number };
+  beforeCombat: CombatContext;
   immediately: CombatContext;
   duringCombat: CombatContext;
   afterCombat: CombatContext;

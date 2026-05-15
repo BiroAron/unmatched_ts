@@ -1,18 +1,33 @@
 import { SINBAD_DATA } from "./config/characters/Sinbad.ts";
-import { TEST_SINBAD_DATA } from "./config/characters/SinbadTest.ts";
+import { TEST_FIGHTER_DATA } from "./config/characters/SinbadTest.ts";
 import { GameEngine } from "./engine/GameEngine.ts";
 import { PlayerState } from "./engine/PlayerState.ts";
+import type { MapData } from "./types/GameMap.ts";
 
-const engine = new GameEngine();
+const TEST_MAP: MapData = {
+  name: "test-map",
+  spaces: [
+    { id: "A", zones: ["zone1"], neighbors: ["B"] },
+    { id: "B", zones: ["zone1"], neighbors: ["A", "C"] },
+    { id: "C", zones: ["zone2"], neighbors: ["B", "D"] },
+    { id: "D", zones: ["zone2"], neighbors: ["C"] },
+  ],
+};
+
+const engine = new GameEngine(TEST_MAP);
 const p1 = new PlayerState(SINBAD_DATA);
-const p2 = new PlayerState(TEST_SINBAD_DATA);
+const p2 = new PlayerState(TEST_FIGHTER_DATA);
 
 engine.addPlayer(p1);
 engine.addPlayer(p2);
 
+// Place fighters on adjacent spaces so canAttack resolves
+p1.resetTurnTracking("A");
+p2.resetTurnTracking("B");
+
 // Register Passives
 SINBAD_DATA.registerHooks(engine.bus, p1);
-TEST_SINBAD_DATA.registerHooks(engine.bus, p2);
+TEST_FIGHTER_DATA.registerHooks(engine.bus, p2);
 
 console.log("--- STARTING SIMULATED TESTS ---");
 
@@ -21,10 +36,13 @@ console.log("\nTEST 1: Momentous Shift");
 const momShift = p1.deck.find((c) => c.title === "Momentous Shift")!;
 const regroup = p2.deck.find((c) => c.title === "Regroup")!;
 
+p1.resetTurnTracking("B"); // moved from B to A this turn
+p1.moveToSpace("A");
 engine.resolveCombat(p1, p2, momShift, regroup);
 // Output should show Attack 5 vs Defense 1 = 4 Damage.
 
 p2.hp = p2.maxHp;
+p1.resetTurnTracking("A"); // reset for next test
 
 // --- TEST 2: Feint vs Regroup (Cancellation) ---
 console.log("\nTEST 2: Feint vs Regroup");
@@ -62,3 +80,4 @@ const richesCard = p1.deck.find((c) => c.title === "Riches Beyond Compare")!;
 const handBefore = p1.hand.length;
 
 engine.resolveScheme(p1, richesCard);
+console.log(`\nTEST 5: Riches Beyond Compare — drew ${p1.hand.length - handBefore} cards (Expected: 3).`);

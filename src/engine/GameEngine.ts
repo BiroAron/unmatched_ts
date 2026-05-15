@@ -10,6 +10,7 @@ export class GameEngine {
   public bus: EventBus;
   public players: PlayerState[] = [];
   public map: GameMap;
+  public winner: string | null = null;
 
   constructor(mapData: MapData) {
     this.bus = new EventBus();
@@ -18,6 +19,11 @@ export class GameEngine {
 
   public addPlayer(player: PlayerState) {
     this.players.push(player);
+    player.onDeath = () => {
+      this.winner =
+        this.players.find((p) => p !== player)?.characterName ?? null;
+      console.log(`${player.characterName} has died! Winner: ${this.winner}`);
+    };
     console.log(`Player ${player.characterName} added to the engine.`);
   }
 
@@ -173,6 +179,9 @@ export class GameEngine {
       damageDealt: 0,
     };
 
+    this.applyEffects("beforeCombat", context);
+    context = this.bus.emit("beforeCombat", context);
+
     this.applyEffects("immediately", context);
     context = this.bus.emit("immediately", context);
 
@@ -194,6 +203,8 @@ export class GameEngine {
     console.log(
       `${context.defender.characterName} took ${context.damageDealt} damage! (Remaining: ${context.defender.hp})`,
     );
+
+    if (this.winner) return;
 
     this.applyEffects("afterCombat", context);
     this.bus.emit("afterCombat", context);
